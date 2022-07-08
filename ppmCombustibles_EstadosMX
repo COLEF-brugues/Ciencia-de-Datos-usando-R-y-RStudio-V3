@@ -1,0 +1,34 @@
+# Carácteres usados en el idioma español 
+Sys.setlocale("LC_ALL", "Spanish") #PC
+#Sys.setlocale("LC_ALL", "es_ES.UTF-8") # Mac
+
+# Establecer la precision de los calculos
+options(digits=9)
+
+# Cargar paquetes a utilizar
+library(pacman)
+p_load(dplyr,ggplot2)
+
+# Lectura de los datos
+temp <- read.csv('https://www.cre.gob.mx/da/PreciosPromedioMensuales.csv', skip = 2, header=FALSE)
+# Utilizar las columnas seleccionadas
+datosPPMGasMX <- temp[,c(3,4,1,2,7,12)]
+colnames(datosPPMGasMX) <- c('Y','m','nombEntidad','ppmGas87','ppmGas92','ppmDiesel')
+
+# Cambiar el formato de los datos y convertir los textos a UTF-8
+datosPPMGasMX$fecha <- as.Date(paste(datosPPMGasMX$m,1,datosPPMGasMX$Y,sep='/'),format = "%m/%d/%Y")
+datosPPMGasMX$nombEntidad <- iconv(datosPPMGasMX$nombEntidad, "ISO_8859-1", "UTF-8")
+
+# Graficar un subcojunto de los datos seleccionados al mostrarlos
+datosPPMGasMX %>%
+  ggplot(aes(x=fecha, y=ppmDiesel),size=1) +
+    geom_line(data=. %>% filter(nombEntidad == 'Chihuahua'), aes(color=as.factor(nombEntidad)))+
+    geom_line(data=. %>% filter(nombEntidad == 'Ciudad de México'), aes(color=as.factor(nombEntidad)))+
+    labs(color = "")    
+
+# Graficar un subcojunto de los datos seleccionados antes de mostrarlos
+datosPPMGasMX %>%
+  filter(nombEntidad %in% c('Chihuahua', 'Ciudad de México')) %>%
+  ggplot(aes(x=fecha, y=ppmDiesel, color=nombEntidad),size=1) +
+    geom_line()+
+    labs(color = "")    
